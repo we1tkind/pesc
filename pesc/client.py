@@ -52,6 +52,13 @@ class PescMeter(PescObject):
                                      headers=headers)
         return response.json()
 
+    @property
+    def indication_info(self):
+        url = '/'.join((self.api_url, self.provider, 'indication-info', self.meter_id))
+        headers = {'content-type': 'application/json; charset=utf-8'}
+        response = self.session.get(url, headers=headers)
+        return response.json()
+
     def post_indication(self, day=0, night=0):
         url = '/'.join((self.api_url, self.provider, 'indication/new'))
         headers = {'content-type': 'application/json; charset=utf-8'}
@@ -149,6 +156,15 @@ class PescAccount(PescObject):
         response = self.session.post(url, data=json.dumps(data),
                                      headers=headers)
         return response.json()['address']
+
+    @property
+    def balance(self):
+        url = '/'.join((self.api_url, self.provider, 'balance'))
+        headers = {'content-type': 'application/json; charset=utf-8'}
+        data = {'accountNumber': self.account_id}
+        response = self.session.post(url, data=json.dumps(data),
+                                     headers=headers)
+        return response.json()
 
     def __repr__(self):
         return 'Account {} at {}'.format(self.account_id, self.address)
