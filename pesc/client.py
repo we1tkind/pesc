@@ -29,10 +29,10 @@ class PescMeter(PescObject):
         super().__init__(session=session)
         self.account_id = account_id
         self.provider = provider
-        self.api_url = ROOT_URL + '/application/api/accounts'
+        self.api_url = ROOT_URL + '/application/accounts'
         self.meter_id = meter_id
         self.meter_number = meter_number
-    
+
     @property
     def info(self):
         url = '/'.join((self.api_url, self.provider,
@@ -65,7 +65,8 @@ class PescMeter(PescObject):
         return response.json()
 
     def __repr__(self):
-        return 'Meter {} from account {}'.format(self.meter_number, self.account_id)
+        return 'Meter {} from account {}'.format(self.meter_number,
+                                                 self.account_id)
 
 
 class PescAccount(PescObject):
@@ -73,29 +74,31 @@ class PescAccount(PescObject):
     This is class for consumer account.
 
     """
-    def __init__(self, session, account_id, provider_name, service_name):
+    def __init__(self, session, account_id, provider_name, service_type):
         super().__init__(session=session)
-        self.api_url = ROOT_URL + '/application/api/accounts'
+        self.api_url = ROOT_URL + '/application/accounts'
         self.account_id = account_id
         self.provider = provider_name
-        self.service =  service_name
-    
+        self.service_type = service_type
+
     def get_bills(self, date_from=datetime.now().strftime('01-01-%Y'),
                   date_to=datetime.now().strftime('%d-%m-%Y')):
         url = '/'.join((self.api_url, self.provider, 'bills'))
         headers = {'content-type': 'application/json; charset=utf-8'}
         data = {"dateFrom": date_from, "dateTo": date_to,
-                "accountNumber": self.account_id}
+                "accountNumber": self.account_id,
+                'serviceType': self.service_type}
         response = self.session.post(url, data=json.dumps(data),
                                      headers=headers)
         return response.json()
-    
+
     def get_payments(self, date_from=datetime.now().strftime('01-01-%Y'),
                      date_to=datetime.now().strftime('%d-%m-%Y')):
         url = '/'.join((self.api_url, self.provider, 'payments'))
         headers = {'content-type': 'application/json; charset=utf-8'}
         data = {'account': {'accountNumber': self.account_id},
-                'period': {'dateFrom': date_from, 'dateTo': date_to}}
+                'period': {'dateFrom': date_from, 'dateTo': date_to},
+                'serviceType': self.service_type}
         response = self.session.post(url, data=json.dumps(data),
                                      headers=headers)
         return response.json()
@@ -103,7 +106,8 @@ class PescAccount(PescObject):
     def get_meters(self):
         url = '/'.join((self.api_url, self.provider, 'meters'))
         headers = {'content-type': 'application/json; charset=utf-8'}
-        data = {'accountNumber': self.account_id}
+        data = {'accountNumber': self.account_id,
+                'serviceType': self.service_type}
         response = self.session.post(url, data=json.dumps(data),
                                      headers=headers)
         return [PescMeter(self.session, self.account_id, self.provider,
@@ -118,7 +122,8 @@ class PescAccount(PescObject):
     def status(self):
         url = '/'.join((self.api_url, self.provider, 'status'))
         headers = {'content-type': 'application/json; charset=utf-8'}
-        data = {'accountNumber': self.account_id}
+        data = {'accountNumber': self.account_id,
+                'serviceType': self.service_type}
         response = self.session.post(url, data=json.dumps(data),
                                      headers=headers)
         return response.json()
@@ -127,7 +132,8 @@ class PescAccount(PescObject):
     def debt(self):
         url = '/'.join((self.api_url, self.provider, 'debt'))
         headers = {'content-type': 'application/json; charset=utf-8'}
-        data = {'accountNumber': self.account_id}
+        data = {'accountNumber': self.account_id,
+                'serviceType': self.service_type}
         response = self.session.post(url, data=json.dumps(data),
                                      headers=headers)
         return response.json()
@@ -136,7 +142,8 @@ class PescAccount(PescObject):
     def active_payments(self):
         url = '/'.join((self.api_url, self.provider, 'activePayments'))
         headers = {'content-type': 'application/json; charset=utf-8'}
-        data = {'accountNumber': self.account_id}
+        data = {'accountNumber': self.account_id,
+                'serviceType': self.service_type}
         response = self.session.post(url, data=json.dumps(data),
                                      headers=headers)
         return response.json()
@@ -145,7 +152,8 @@ class PescAccount(PescObject):
     def address(self):
         url = '/'.join((self.api_url, self.provider, 'address'))
         headers = {'content-type': 'application/json; charset=utf-8'}
-        data = {'accountNumber': self.account_id}
+        data = {'accountNumber': self.account_id,
+                'serviceType': self.service_type}
         response = self.session.post(url, data=json.dumps(data),
                                      headers=headers)
         return response.json()['address']
@@ -161,7 +169,7 @@ class PescClient(PescObject):
     """
     def __init__(self, session_path=None):
         super().__init__()
-        self.api_url = ROOT_URL + '/application/api'
+        self.api_url = ROOT_URL + '/application'
         self.username = None
         self.password = None
 
@@ -175,12 +183,12 @@ class PescClient(PescObject):
             username
         password: str
             password
-        
+
         Returns
         _______
         dict
             {'authenticationSuccess': True} or
-            {'errors': [{'code': 3, 'message': 'Неверный пароль'}]}         
+            {'errors': [{'code': 3, 'message': 'Неверный пароль'}]}
         """
         self.username = username
         self.password = password
@@ -199,8 +207,8 @@ class PescClient(PescObject):
         dict
             {'email': 'null@prg.re', 'emailConfirmed': True, 'phoneConfirmed': True,
              'superUserMode': False, 'guideViewed': True, 'phoneExists': True,
-             'hasPersonalInfo': True} or 
-            {'errors': [{'code': 5, 'message': 'Неавторизованный доступ'}]} 
+             'hasPersonalInfo': True} or
+            {'errors': [{'code': 5, 'message': 'Неавторизованный доступ'}]}
         """
         url = self.api_url + '/checkAuthentication'
         response = self.session.get(url)
@@ -211,9 +219,9 @@ class PescClient(PescObject):
         response = self.session.get(url)
         return [PescAccount(self.session,
                             account['accountNumber'],
-                            account['providerName'].lower(),
-                            account['serviceName'].lower())
-                for account in response.json()]
+                            account['providerName'],
+                            account['serviceName'])
+                for account in response.json()['ELECTRICITY']]
 
     @property
     def accounts(self):
@@ -223,7 +231,11 @@ class PescClient(PescObject):
     def notifications(self):
         url = self.api_url + '/notifications'
         response = self.session.get(url)
-        return response.json()
+        try:
+            notifications = response.json()
+        except json.decoder.JSONDecodeError:
+            notifications = response.text
+        return notifications
 
     def logout(self):
         """
