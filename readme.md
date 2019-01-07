@@ -8,7 +8,7 @@ Before you use the wrapper you need to register on the [site](https://ikus.pesc.
 ```python
 >>> from pesc import PescClient
 >>> client = PescClient()
->>> client.auth('sa@prg.re', 'xxx-xxx-xxx-xxx')
+>>> client.auth('sa@prg.re', 'password')
 {'authenticationSuccess': True}
 ```
 
@@ -22,7 +22,7 @@ Before you use the wrapper you need to register on the [site](https://ikus.pesc.
 ### Bills
 
 ```python
->>> bills = account.get_bills(date_from='30.12.2010', date_to='01.01.2016')
+>>> bills = account.get_bills(date_from='30-12-2010', date_to='01-01-2016')
 >>> bills[0]
 {'billId': 130098827, 'period': '01-01-2016', 'billNumber': 52, 'sum': 0.31}
 ```
@@ -30,7 +30,7 @@ Before you use the wrapper you need to register on the [site](https://ikus.pesc.
 ### Payments
 
 ```python
->>> payments = accounts[0].get_payments(date_from='01.01.2018', date_to='30.05.2018')
+>>> payments = accounts[0].get_payments(date_from='01-01-2018', date_to='30-05-2018')
 >>> payments[0]
 {'date': '09-01-2018', 'sum': 1020.74, 'type': 'Счет', 'charge': 1020.74, 'fine': 0.0, 'period': '01-01-2018', 'checkExists': True, 'status': 'DONE'}
 ```
@@ -49,7 +49,7 @@ Before you use the wrapper you need to register on the [site](https://ikus.pesc.
 Get indications
 
 ```python
->>> indications = meter.get_indications(date_from='01.01.2018', date_to='30.05.2018')
+>>> indications = meter.get_indications(date_from='01-01-2018', date_to='30-05-2018')
 >>> indications[0]
 {'type': 'Заявленные показания', 'date': '22-09-2018', 'scaleValues': [{'scale': 'DAY', 'value': 14867}, {'scale': 'NIGHT', 'value': 7092}]}
 ```

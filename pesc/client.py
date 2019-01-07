@@ -25,10 +25,12 @@ class PescMeter(PescObject):
     This class for electric meter.
 
     """
-    def __init__(self, session, account_id, provider, meter_id, meter_number):
+    def __init__(self, session, account_id, provider, service_type,
+                 meter_id, meter_number):
         super().__init__(session=session)
         self.account_id = account_id
         self.provider = provider
+        self.service_type = service_type
         self.api_url = ROOT_URL + '/application/accounts'
         self.meter_id = meter_id
         self.meter_number = meter_number
@@ -56,6 +58,7 @@ class PescMeter(PescObject):
         url = '/'.join((self.api_url, self.provider, 'indication/new'))
         headers = {'content-type': 'application/json; charset=utf-8'}
         data = {'account': {'accountNumber': self.account_id},
+                'serviceType': self.service_type,
                 'meterId': self.meter_id,
                 'indication': [{'scale': "DAY", 'value': day},
                                {'scale': "NIGHT", 'value': night}]
@@ -85,8 +88,8 @@ class PescAccount(PescObject):
                   date_to=datetime.now().strftime('%d-%m-%Y')):
         url = '/'.join((self.api_url, self.provider, 'bills'))
         headers = {'content-type': 'application/json; charset=utf-8'}
-        data = {"dateFrom": date_from, "dateTo": date_to,
-                "accountNumber": self.account_id,
+        data = {'dateFrom': date_from, 'dateTo': date_to,
+                'accountNumber': self.account_id,
                 'serviceType': self.service_type}
         response = self.session.post(url, data=json.dumps(data),
                                      headers=headers)
@@ -110,7 +113,8 @@ class PescAccount(PescObject):
                 'serviceType': self.service_type}
         response = self.session.post(url, data=json.dumps(data),
                                      headers=headers)
-        return [PescMeter(self.session, self.account_id, self.provider,
+        return [PescMeter(self.session, self.account_id,
+                          self.provider, self.service_type,
                           meter['meterId'], meter['meterNumber'])
                 for meter in response.json()]
 
